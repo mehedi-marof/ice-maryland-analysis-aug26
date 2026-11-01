@@ -17,7 +17,7 @@ This is our analysis of ICE records for Maryland.
 **The data.** ICE records released through a public records lawsuit and published by the Deportation Data Project (UC Berkeley and UCLA): <https://deportationdata.org/data/processed/ice.html>. We use the release of Aug. 24, 2026, which covers Oct. 1, 2022, through Aug. 6, 2026. The parquet files go in `data/raw/`:
 
 | File | One row is... |
-|------------------------------------|------------------------------------|
+|----|----|
 | `arrests-latest.parquet` | one ICE arrest |
 | `detainers-latest.parquet` | one detainer: ICE asking a jail or prison to hold someone |
 | `joined-arrests-detention-stays-latest.parquet` | one arrest, linked to that person's time in ICE detention |
@@ -674,8 +674,6 @@ detainer_outcomes |>
 
 - **3,298** detainers since Jan. 20, 2025. **1,649** have a recorded outcome and **1,649** (half) don't yet.
 - Of those with an outcome, **1,019** (**61.8%**) ended with ICE taking custody and **210** (**12.7%**) were declined by the jail.
-
-
 
 ------------------------------------------------------------------------
 
