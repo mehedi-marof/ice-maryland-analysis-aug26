@@ -4,7 +4,7 @@ The analysis behind a three-story Capital News Service series by Mehedi Marof on
 
 1. [ICE's arrests in Maryland nearly doubled this year. The growth is people with no criminal record](https://mehedi-marof.github.io/ICE-arrests-in-maryland-nearly-doubled/)
 2. [After an ICE arrest in Maryland, most people were held out of state. Many were moved again and again](https://mehedi-marof.github.io/After-ICE-arrests-in-Maryland/)
-3. [Maryland's 287(g) ban and aftermath](https://mehedi-marof.github.io/maryland-police-can-still-help-ICE/)
+3. [Maryland banned 287(g). Local law enforcement still can help ICE when they want to](https://mehedi-marof.github.io/maryland-police-can-still-help-ICE/)
 
 Every figure the stories draw from the ICE records comes from `maryland_ice_notebook.qmd`. Each story footnote names the notebook section it comes from (for example, "Notebook section 2.4"). Other facts in the stories, such as court rulings, government statements and county records, come from the sources named in the stories.
 
