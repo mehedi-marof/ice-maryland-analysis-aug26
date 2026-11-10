@@ -9,12 +9,12 @@ editor: visual
 
 This is our analysis of ICE records for Maryland.
 
-**Time periods.** The story uses two windows, and we say which one every time:
+**Time periods.** The stories use two windows, and we say which one every time:
 
 - **January–July, 2025 vs. 2026** for the year-over-year growth. Same months in both years, and we stop at July because the records end Aug. 6.
 - **Since Jan. 20, 2025**, when President Donald Trump's second term began, through Aug. 6, 2026, for everything else: where ICE made arrests, who was arrested, the 287(g) ban, detention and departures.
 
-**The data.** ICE records released through a public records lawsuit and published by the Deportation Data Project (UC Berkeley and UCLA): <https://deportationdata.org/data/processed/ice.html>. We use the release of Aug. 24, 2026, which covers Oct. 1, 2022, through Aug. 6, 2026. The parquet files go in `data/raw/`:
+**The data.** ICE records released through Freedom of Information Act lawsuits and published by the Deportation Data Project (UC Berkeley and UCLA): <https://deportationdata.org/data/processed/ice.html>. We use the release of Aug. 24, 2026, which covers Oct. 1, 2022, through Aug. 6, 2026. The parquet files go in `data/raw/`:
 
 | File | One row is... |
 |----|----|
@@ -117,7 +117,7 @@ We also add the columns we need later:
 - `route`: how ICE says the arrest happened, from its simplified method field
 - `custodial`: TRUE when a jail or prison handed the person to ICE ("Custodial Arrest," which includes the Criminal Alien Program, or "287(g) Program")
 - `ice_office`: arrested at one of ICE's two Baltimore offices
-- `place`: at an ICE office, handed over from custody, or in the community (everything else)
+- `place`: at an ICE office (`office`), handed over from custody (`custody`), or any other non-custodial arrest, such as at a home, workplace or roadside (`community`)
 
 ```{r}
 md_arrests <- md_all_rows |>
@@ -199,16 +199,16 @@ md_growth |> adorn_totals() |>
 - No-record arrests went from **941 to 2,952**, up **2,011**. That's more than the whole increase, because the other two groups went down: convicted **859 → 820**, pending charges **424 → 410**.
 - Pending plus convicted in Jan.–July 2026: 410 + 820 = **1,230**.
 
-How many people are behind the 2026 no-record arrests? And how does that number compare with all the no-record arrests before August 2025?
+How many people are behind the 2026 no-record arrests? And how does that number compare with all the no-record arrests in 2025?
 
 ```{r}
 md_2026 |> filter(no_record) |> summarise(arrests = n(), people = n_distinct(unique_identifier, na.rm = TRUE)) |>
   show_all()
-md_arrests |> filter(no_record, apprehension_date <= as.Date("2025-07-31")) |> nrow()
+md_arrests |> filter(no_record, year == 2025) |> nrow()
 ```
 
 - The 2,952 no-record arrests involve **2,922** people.
-- From October 2022 through July 2025, there were **2,746** no-record arrests, fewer than the 2,952 in seven months of 2026.
+- In all of 2025, there were **2,646** no-record arrests, fewer than the 2,952 in the first seven months of 2026.
 
 ## 1.6 Since Trump took office (Jan. 20, 2025–Aug. 6, 2026)
 
@@ -265,9 +265,13 @@ Does where someone is arrested match who they are? Since Jan. 20, 2025:
 ```{r}
 md_trump |> group_by(place) |> summarise(arrests = n(), share_no_record = round(mean(no_record), 3)) |>
   show_all()
+md_trump |> filter(!custodial) |> summarise(arrests = n(), share_no_record = round(mean(no_record), 3), no_record = sum(no_record)) |>   # share first
+  show_all()
+md_trump |> filter(ice_office) |> count(custodial) |>
+  show_all()
 ```
 
-- Community arrests: **69.2%** no record (of 6,637). Handoffs from jails and prisons: **26.8%** (of 1,545). Arrests at ICE's offices: **76.5%** (of **889**).
+- Non-custodial arrests outside ICE's offices: **69.2%** no record (of 6,637). Handoffs from jails and prisons: **26.8%** (of 1,545). Arrests at ICE's offices: **76.5%** (of **889**). All non-custodial arrests together, including those at the offices: **70.0%** (5,204 of 7,438). Of the 889 office arrests, **88** were coded custodial, so they count as custodial in the custodial comparisons.
 
 ## 1.9 Before and after the 287(g) ban
 
@@ -306,8 +310,7 @@ tibble(period = c("before ban", "after ban"),
 Raw count behind the 4% share before the ban:
 
 ```{r}
-arrests_before_ban <- md_arrests |> filter(apprehension_date >= inauguration, apprehension_date < ban_date)
-c(arrests = nrow(arrests_before_ban), g287 = sum(arrests_before_ban$apprehension_method_simple == "287(g) Program"))
+c(arrests = nrow(before_ban), g287 = sum(before_ban$route == "287(g) agreement"))
 ```
 
 - **240** of **5,982** arrests from Jan. 20, 2025, to Feb. 16, 2026 (**4.0%**) were coded 287(g).
@@ -391,7 +394,7 @@ md_trump |> filter(county == "Wicomico County") |> count(city_clean, sort = TRUE
   show_all()
 ```
 
-- Most say "WCD General Area" (**857**), a general area, not an address. Almost all Wicomico arrests (**1,065** of 1,111) were made in the community, not handed over from the county jail. The county comes from the city ICE recorded, which was Salisbury for **913** of them.
+- Most say "WCD General Area" (**857**), a general area, not an address. Almost all Wicomico arrests (**1,065** of 1,111) were non-custodial, not handoffs from the county jail. The county comes from the city ICE recorded, which was Salisbury for **913** of them.
 
 Arrests per 10,000 residents since Jan. 20, 2025, by county. We leave out arrests at ICE's offices, because people come to those from all over the state.
 
@@ -538,7 +541,7 @@ share_monthly |> show_all()
 
 - From February 2025 through July 2026, Maryland's no-record share was above the national share every month, by about 10 to 38 percentage points. The widest gap was February 2026: **76.8%** in Maryland vs. **38.4%** nationally.
 
-States, ranked by no-record share since Jan. 20, 2025. We only rank states with at least 1,000 arrests, so tiny numbers don't top the list. D.C. is out because it isn't a state. (Puerto Rico is in the data's state field, so we note it if it shows up.)
+States, ranked by no-record share since Jan. 20, 2025. We only rank places with at least 1,000 arrests, so small numbers don't top the list. We leave out the District of Columbia. The data's state field also includes territories such as Puerto Rico, so the stories say "states and territories."
 
 ```{r}
 states <- us_trump |>
@@ -697,7 +700,7 @@ md_det_trump |> filter(detainer_date >= ban_date) |> det_by_facility() |> head(1
 - Since Jan. 20, 2025: Frederick **141** taken into ICE custody, **2** declined (184 detainers); Harford **89** and **1** (111); Prince George's **50** and **72** (526); Montgomery County Detention **61** and **41** (451); Howard **4** and **17** (73).
 - Since the ban, Maryland facilities declined **48** of **946** detainers; most have no outcome yet.
 
-For the chart of detainer outcomes by jail (Part 3 story), seven county jails. "Other or not yet recorded" is every detainer that was neither taken into custody nor declined.
+For the chart of detainer outcomes by jail in the third story, seven county jails. "Other or not yet recorded" is every detainer that was neither taken into custody nor declined.
 
 ```{r}
 jail_names <- c("FREDERICK COUNTY DET. CEN" = "Frederick", "HARFORD COUNTY DETENTION" = "Harford",
@@ -710,8 +713,7 @@ detainer_outcomes_csv <- md_det_trump |> det_by_facility() |>
          other = detainers - custody - declined) |>
   arrange(desc(custody / detainers)) |>
   select(jail, facility_name = detention_facility, detainers, custody, declined, other, no_outcome)
-write_csv(detainer_outcomes_csv, "csv/detainer_outcomes.csv")
-detainer_outcomes_csv |> show_all()
+detainer_outcomes_csv |> show_all()   # saved in Part 5
 ```
 
 # Part 3: The joined arrests-and-detention file
@@ -815,7 +817,7 @@ arrests_2025 |> group_by(apprehension_criminality) |> outcome_f() |> show_all()
 
 ## 3.3b Citizenship, and how cases ended, by country
 
-Who did ICE arrest in Maryland since Jan. 20, 2025, by citizenship, and how many of those arrests had ended with the person leaving the country by early August? We use the joined file, one row per arrest. This is for a chart in the second story.
+Who did ICE arrest in Maryland since Jan. 20, 2025, by citizenship, and how many of those arrests had ended with the person leaving the country by early August? We use the joined file, one row per arrest. This table is saved as `csv/citizenship.csv`; the stories' citizenship chart uses the arrests-file table from 1.13 instead.
 
 ```{r}
 citizenship <- md_joined |>
@@ -895,7 +897,7 @@ departed |> filter(other, departure_country %in% c("GHANA", "SIERRA LEONE")) |> 
 - **6,084** departures (of **6,043** people) arrested since Jan. 20, 2025. The most went to Guatemala (**1,840**), El Salvador (**1,188**), Mexico (**1,012**) and Honduras (**980**).
 - **271** went to a country other than the person's own: **191** to Mexico, and **154** of the 271 had no record.
 - Of the 191 sent to Mexico, most were Salvadorans (**59**), Guatemalans (**48**) and Hondurans (**39**), then Venezuelans (**23**) and Nicaraguans (**14**). Only **4** were Cuban.
-- A few West Africans were sent to other West African countries, such as **5** Nigerians to Ghana. These are destinations as ICE recorded them. Mexico is often a country people crossed on the way north.
+- A few West Africans were sent to other West African countries, such as **5** Nigerians to Ghana. These are destinations as ICE recorded them.
 
 ------------------------------------------------------------------------
 
@@ -1021,7 +1023,7 @@ tibble(stays = length(long_ids), people = n_distinct(paths$person[paths$stay_ID 
 
 - **25** people (25 stays) took exactly this path: Baltimore hold room → Caroline Detention Facility (Va.) → Richmond sub-office hold room (Va.) → Winn Correctional Center (La.) → Alexandria Staging Facility (La.).
 - Median days at each stop: **1.1, 1.4, 0.3, 3.5, 0.9**. The whole trip took a median of **9.4** days.
-- **24** of the 25 left the country. **16** had no record. These are group numbers, so no one person's record is shown.
+- All **25** are recorded as removed (see below); **24** have a departure date. **16** had no record. These are group numbers, so no one person's record is shown.
 
 How did they leave, and where did they go? `stay_release_reason` says why ICE ended the detention stay. We also compare the departure country with the citizenship country.
 
@@ -1094,6 +1096,9 @@ md_trump |>
 
 # hold room by month
 write_csv(hold_monthly, "csv/holdroom.csv")
+
+# detainer outcomes for seven county jails, since Jan. 20, 2025
+write_csv(detainer_outcomes_csv, "csv/detainer_outcomes.csv")
 
 # no-record share by month, Maryland vs. U.S.
 write_csv(share_monthly, "csv/share_monthly.csv")

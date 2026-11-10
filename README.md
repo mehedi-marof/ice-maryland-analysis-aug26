@@ -1,12 +1,6 @@
 # ICE in Maryland: data analysis
 
-The analysis behind a three-story Capital News Service series by Mehedi Marof on U.S. Immigration and Customs Enforcement in Maryland:
-
-1. [ICE's arrests in Maryland nearly doubled this year. The growth is people with no criminal record](https://mehedi-marof.github.io/ICE-arrests-in-maryland-nearly-doubled/)
-2. [After an ICE arrest in Maryland, most people were held out of state. Many were moved again and again](https://mehedi-marof.github.io/After-ICE-arrests-in-Maryland/)
-3. [Maryland's 287(g) ban and aftermath](https://mehedi-marof.github.io/maryland-police-can-still-help-ICE/)
-
-Every figure the stories draw from the ICE records comes from `maryland_ice_notebook.qmd`. Each story footnote names the notebook section it comes from (for example, "Notebook section 2.4"). Other facts in the stories, such as court rulings, government statements and county records, come from the sources named in the stories.
+The analysis behind a three-story Capital News Service series by Mehedi Marof on U.S. Immigration and Customs Enforcement in Maryland. Every figure in the stories that comes from the ICE records is calculated in `maryland_ice_notebook.qmd`.
 
 ## The data
 
@@ -18,7 +12,6 @@ ICE arrest, detainer and detention records released through Freedom of Informati
 
 ```
 maryland_ice_notebook.qmd    the analysis (R, Quarto)
-maryland_ice_notebook.html   the notebook with every table and result, for reading without running it
 csv/                         tables the notebook writes for the graphics (Part 5)
 data/lookups/                our lookup tables: city to county, 2020 county population, map coordinates
 data/raw/                    the ICE files go here (see README.txt)
@@ -75,7 +68,7 @@ The same event sometimes appears in a file more than once. The project marks row
 
 When we compare this year with last year, we use the same months in both years, January through July, because the records stop on Aug. 6, 2026. Everything else covers Jan. 20, 2025, the day President Donald Trump's second term began, through Aug. 6, 2026, unless the story says otherwise.
 
-Maryland banned 287(g) agreements on Feb. 17, 2026. To compare before and after the ban, we had two periods of different lengths: about 13 months before (Jan. 20, 2025, to Feb. 16, 2026, or 393 days) and about five and a half months after (Feb. 17 to Aug. 6, 2026, or 171 days). Comparing raw totals would be misleading, so we turned each into a monthly average: the count divided by the number of days, times 30.4, the average number of days in a month.
+Maryland banned 287(g) agreements on Feb. 17, 2026. To compare before and after the ban, we had two periods of different lengths: about 13 months before (Jan. 20, 2025, to Feb. 16, 2026, or 393 days) and about five and a half months after (Feb. 17 to Aug. 6, 2026, or 171 days). Comparing raw totals would be misleading, so we turned each into a monthly average: the count divided by the number of days, times 30.4375, the average number of days in a month.
 
 ### Arrests (notebook Part 1)
 
@@ -92,9 +85,9 @@ Maryland banned 287(g) agreements on Feb. 17, 2026. To compare before and after 
 **How the arrest happened.** ICE records how each arrest was made (`apprehension_method_simple`). We grouped them into two kinds:
 
 - **Custodial arrests:** the person was already held by a jail, prison or other law enforcement agency, which handed them to ICE. This includes arrests ICE codes "Custodial Arrest," including its Criminal Alien Program, and "287(g) Program."
-- **Non-custodial arrests:** ICE found the person itself, at a home, workplace, roadside or one of its own offices. Most are coded "At-Large Arrest."
+- **Non-custodial arrests:** everything else. ICE found the person itself, at a home, workplace, roadside or one of its own offices. Most are coded "At-Large Arrest."
 
-Arrests at ICE's two Baltimore offices, its field office and the office where immigrants under supervision report for check-ins, were identified by the location ICE recorded (`event_landmark`). We counted an arrest as a 287(g) arrest only if ICE itself coded it that way.
+Arrests at ICE's two Baltimore offices, its field office and the office where immigrants under supervision report for check-ins, were identified by the location ICE recorded (`event_landmark`). There were 889 since Jan. 20, 2025; most are coded non-custodial, and the 88 coded custodial count as custodial in the custodial comparisons. We counted an arrest as a 287(g) arrest only if ICE itself coded it that way.
 
 **Comparisons with the rest of the country.** National figures come from the same arrests file, using all states. When we ranked states by the share of arrests involving people with no record, we included only the 43 states and territories with at least 1,000 arrests since Jan. 20, 2025, because shares based on small numbers can swing widely. We left out the District of Columbia.
 
@@ -102,7 +95,7 @@ Arrests at ICE's two Baltimore offices, its field office and the office where im
 
 ICE usually records a city or general area, not an exact address. To place each arrest in a county, we first looked at whether ICE's location description named a county or Baltimore City. If it did not, we used the city ICE recorded and matched it to a county using a lookup table we built (`data/lookups/md_city_to_county.csv`). The city names in the records are often misspelled or abbreviated, so we matched most to a ZIP code directory, corrected others by hand and left a few unplaced. In all, 98.7% of arrests, and 99.5% of those since Jan. 20, 2025, were placed in a county.
 
-To compare counties of different sizes, we calculated arrests for every 10,000 residents, using 2020 census populations from the Maryland Department of Planning. These rates count all residents, not only immigrants, and they leave out arrests at ICE's two Baltimore offices, because those are recorded at the office's location rather than where the person was found. The Eastern Shore means Caroline, Cecil, Dorchester, Kent, Queen Anne's, Somerset, Talbot, Wicomico and Worcester counties. On the map, each circle sits at the center of the city ICE recorded.
+To compare counties of different sizes, we calculated arrests for every 10,000 residents, using 2020 census populations from the Maryland Department of Planning. These rates count all residents, not only immigrants, and they leave out arrests at ICE's two Baltimore offices, because those are recorded at the office's location rather than where the person was found. The Eastern Shore means Caroline, Cecil, Dorchester, Kent, Queen Anne's, Somerset, Talbot, Wicomico and Worcester counties. On the map, each circle sits at the center of the city ICE recorded. The map leaves out 495 arrests since Jan. 20, 2025 (about 5%), because ICE recorded no city or a city that could not be placed on the map.
 
 ### Detainers (notebook Part 2)
 
