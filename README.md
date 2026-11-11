@@ -1,6 +1,6 @@
 # ICE in Maryland: data analysis
 
-The analysis behind a three-story Capital News Service series by Mehedi Marof on U.S. Immigration and Customs Enforcement in Maryland. Every figure in the stories that comes from the ICE records is calculated in `maryland_ice_notebook.qmd`.
+The analysis behind a series of stories on U.S. Immigration and Customs Enforcement in Maryland for Capital News Service by Mehedi Marof. Figures in the stories that comes from the ICE records is calculated in `maryland_ice_notebook.qmd`.
 
 ## The data
 
