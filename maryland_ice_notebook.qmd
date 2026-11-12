@@ -7,7 +7,7 @@ format:
 editor: visual
 ---
 
-This is our analysis of ICE records for Maryland.
+This is the analysis behind Capital News Service's series of stories on U.S. Immigration and Customs Enforcement in Maryland. Every figure in the stories that comes from ICE records is calculated here, and each section ends with the numbers it found.
 
 **Time periods.** The stories use two windows, and we say which one every time:
 
@@ -17,7 +17,7 @@ This is our analysis of ICE records for Maryland.
 **The data.** ICE records released through Freedom of Information Act lawsuits and published by the Deportation Data Project (UC Berkeley and UCLA): <https://deportationdata.org/data/processed/ice.html>. We use the release of Aug. 24, 2026, which covers Oct. 1, 2022, through Aug. 6, 2026. The parquet files go in `data/raw/`:
 
 | File | One row is... |
-|----|----|
+|------------------------------------|------------------------------------|
 | `arrests-latest.parquet` | one ICE arrest |
 | `detainers-latest.parquet` | one detainer: ICE asking a jail or prison to hold someone |
 | `joined-arrests-detention-stays-latest.parquet` | one arrest, linked to that person's time in ICE detention |
@@ -271,7 +271,7 @@ md_trump |> filter(ice_office) |> count(custodial) |>
   show_all()
 ```
 
-- Non-custodial arrests outside ICE's offices: **69.2%** no record (of 6,637). Handoffs from jails and prisons: **26.8%** (of 1,545). Arrests at ICE's offices: **76.5%** (of **889**). All non-custodial arrests together, including those at the offices: **70.0%** (5,204 of 7,438). Of the 889 office arrests, **88** were coded custodial, so they count as custodial in the custodial comparisons.
+- Non-custodial arrests outside ICE's offices: **69.2%** no record (of 6,637). Custodial arrests: **26.8%** (of 1,545). Arrests at ICE's offices: **76.5%** (of **889**). All non-custodial arrests together, including those at the offices: **70.0%** (5,204 of 7,438). Of the 889 office arrests, **88** were coded custodial, so they count as custodial in the custodial comparisons.
 
 ## 1.9 Before and after the 287(g) ban
 
@@ -302,8 +302,8 @@ tibble(period = c("before ban", "after ban"),
   show_all()
 ```
 
-- **996** transfers from custody from Jan. 20, 2025, to Feb. 16, 2026, and **385** from Feb. 17 to Aug. 6, 2026.
-- Handoffs from custody: about **77 a month** before the ban, **69** after.
+- **996** custodial arrests from Jan. 20, 2025, to Feb. 16, 2026, and **385** from Feb. 17 to Aug. 6, 2026.
+- Custodial arrests: about **77 a month** before the ban, **69** after.
 - 287(g) was **4%** of arrests before the ban and **0.4%** after.
 - Overall arrests: **463** a month before, **550** after.
 
@@ -394,7 +394,7 @@ md_trump |> filter(county == "Wicomico County") |> count(city_clean, sort = TRUE
   show_all()
 ```
 
-- Most say "WCD General Area" (**857**), a general area, not an address. Almost all Wicomico arrests (**1,065** of 1,111) were non-custodial, not handoffs from the county jail. The county comes from the city ICE recorded, which was Salisbury for **913** of them.
+- Most say "WCD General Area" (**857**), a general area, not an address. Almost all Wicomico arrests (**1,065** of 1,111) were non-custodial, not custodial arrests. The county comes from the city ICE recorded, which was Salisbury for **913** of them.
 
 Arrests per 10,000 residents since Jan. 20, 2025, by county. We leave out arrests at ICE's offices, because people come to those from all over the state.
 
@@ -660,7 +660,7 @@ detainer_outcomes |>
 - Between Jan. 20, 2025, and the ban, **887** detainers ended with ICE taking custody. That's **65%** of the 1,365 with a recorded outcome. Before 2025 it was 42.2%.
 - After the ban: **132** of the 284 with an outcome (46.5%). But **70%** of post-ban detainers have no outcome yet, so we can't say the rate changed.
 
-For the story, we don't compare periods. All detainers since Jan. 20, 2025, together:
+Here we don't compare periods. All detainers since Jan. 20, 2025, together:
 
 ```{r}
 detainer_outcomes |>
@@ -700,7 +700,7 @@ md_det_trump |> filter(detainer_date >= ban_date) |> det_by_facility() |> head(1
 - Since Jan. 20, 2025: Frederick **141** taken into ICE custody, **2** declined (184 detainers); Harford **89** and **1** (111); Prince George's **50** and **72** (526); Montgomery County Detention **61** and **41** (451); Howard **4** and **17** (73).
 - Since the ban, Maryland facilities declined **48** of **946** detainers; most have no outcome yet.
 
-For the chart of detainer outcomes by jail in the third story, seven county jails. "Other or not yet recorded" is every detainer that was neither taken into custody nor declined.
+For the chart of detainer outcomes by jail, seven county jails. "Other or not yet recorded" is every detainer that was neither taken into custody nor declined.
 
 ```{r}
 jail_names <- c("FREDERICK COUNTY DET. CEN" = "Frederick", "HARFORD COUNTY DETENTION" = "Harford",
@@ -783,7 +783,7 @@ tibble(people = nrow(detained_people),
 
 ## 3.3 What happened to people with no record arrested in 2025
 
-People with no record arrested Jan. 20–Dec. 31, 2025, and their status as of early August 2026. "Left the country" means ICE recorded a departure date (deportation or voluntary departure).
+People with no record arrested Jan. 20–Dec. 31, 2025, and their status as of early August 2026. "Left the country" means ICE recorded a departure date.
 
 ```{r}
 outcome_2025 <- md_joined |>
@@ -810,9 +810,17 @@ outcome_f <- function(d) d |>
 arrests_2025 <- md_joined |> filter(apprehension_date >= inauguration, year(apprehension_date) == 2025)
 arrests_2025 |> outcome_f() |> show_all()
 arrests_2025 |> group_by(apprehension_criminality) |> outcome_f() |> show_all()
+
+# the arrests with no clear outcome: no departure date, not released, not still detained
+arrests_2025 |>
+  filter(is.na(departed_date), !stay_release_reason_simple %in% "Released",
+         !str_starts(coalesce(stay_release_reason_simple, ""), "Not released")) |>
+  count(has_detention_stay, stay_release_reason_simple) |>
+  show_all()
 ```
 
 - **4,754** arrests of **4,720** people. **79.3%** ended with the person leaving the country, **12.2%** were released and **3.6%** were still detained. The rest have no clear status.
+- **249** arrests (**5%**) have no clear outcome: **166** have no detention stay recorded, **60** are listed as deported but have no departure date, **22** were transferred to another agency's custody and **1** has another outcome.
 - By criminal history, the share who left: **83.6%** with a prior conviction (1,370 arrests), **81.0%** with a pending charge (749) and **76.5%** with no record (2,635).
 
 ## 3.3b Citizenship, and how cases ended, by country
@@ -871,7 +879,7 @@ tibble(file = c("arrests file", "joined file"),
 - Arrests file: **7,536** departures, **316** to another country. Joined file: **7,611** departures, **308** to another country.
 - The difference comes from the files themselves, not from spelling. The joined file takes these fields from ICE's detention and removal records, so it has more departures, and some people have a different citizenship in each file. We use the joined file because it's linked to each person's detention record. It's about a 1% difference.
 
-That check uses all the records. For the story, we only count departures of people arrested since Jan. 20, 2025:
+That check uses all the records. For the stories, we only count departures of people arrested since Jan. 20, 2025:
 
 ```{r}
 departed <- md_joined |> filter(apprehension_date >= inauguration, !is.na(departed_date))
@@ -993,9 +1001,23 @@ paths |> group_by(path) |> summarise(people = n_distinct(person)) |> arrange(des
   show_all()
 paths |> count(n_stops) |>
   show_all()
+
+# where people were booked first, counting each person once by their first detention stay
+first_stay <- stops |>
+  left_join(stays |> select(stay_ID, person), by = "stay_ID") |>
+  arrange(person, book_in) |>
+  group_by(person) |>
+  filter(stay_ID == first(stay_ID)) |>
+  summarise(first_stop = first(detention_facility),
+            later_baltimore = any(detention_facility[-1] == "BALTIMORE HOLD ROOM"))
+first_stay |> count(first_stop, sort = TRUE) |> head(3) |>
+  show_all()
+first_stay |> filter(first_stop == "SALISBURY HOLD ROOM") |> count(later_baltimore) |>
+  show_all()
 ```
 
 - The single most common path is Baltimore hold room → Richwood Correctional Center (Monroe, La.): **360** people. Next is the Baltimore hold room alone, **357**.
+- Counting each person once, by their first detention: **5,625** were booked first into the Baltimore hold room and **1,836** into the Salisbury hold room. Of those who started in Salisbury, **1,616** were later moved to the Baltimore hold room.
 - Median: **3** stops per stay. **21.7%** of stays had five or more stops. That's higher than the share held in five or more *different* facilities, because stops count return visits.
 
 The most common path with exactly five stops, and the people who took it:
@@ -1035,7 +1057,7 @@ route_people |> count(citizenship_country, departure_country, sort = TRUE) |>
   show_all()
 ```
 
-- ICE lists all **25** as "Removed," which means deported, not a voluntary departure.
+- ICE lists all **25** as "Removed," which means deported.
 - The **24** with a departure date all went to their own country of citizenship: El Salvador **12**, Guatemala **6**, Ecuador **3**, Honduras **2**, Mexico **1**. The 25th, a Honduran citizen, is marked removed but has no departure date or country.
 
 ------------------------------------------------------------------------

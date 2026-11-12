@@ -1,6 +1,11 @@
 # ICE in Maryland: data analysis
 
-The analysis behind a three-story Capital News Service series by Mehedi Marof on U.S. Immigration and Customs Enforcement in Maryland. Every figure in the stories that comes from the ICE records is calculated in `maryland_ice_notebook.qmd`.
+The data analysis behind Capital News Service's series of stories on U.S. Immigration and Customs Enforcement in Maryland, by Mehedi Marof. Every figure in the stories that comes from ICE records is calculated in `maryland_ice_notebook.qmd`.
+
+Stories in the series so far:
+
+- [ICE's arrests in Maryland nearly doubled in 2026. The growth was driven by people with no criminal record](https://cnsmaryland.org/interactives/spring2026/ice-arrests-maryland/)
+- [After an ICE arrest in Maryland, most people were held out of state. Many were moved again and again](https://cnsmaryland.org/interactives/spring2026/after-ice-arrests-maryland/index.html)
 
 ## The data
 
@@ -12,42 +17,42 @@ ICE arrest, detainer and detention records released through Freedom of Informati
 
 ```
 maryland_ice_notebook.qmd    the analysis (R, Quarto)
-csv/                         tables the notebook writes for the graphics (Part 5)
+csv/                         tables the notebook writes for the graphics
 data/lookups/                our lookup tables: city to county, 2020 county population, map coordinates
 data/raw/                    the ICE files go here (see README.txt)
 ```
 
 ## Run it
 
-R with the `tidyverse`, `janitor`, `lubridate` and `arrow` packages. Put the parquet files in `data/raw/`, open the project folder as the working directory and render the notebook in RStudio or with `quarto render maryland_ice_notebook.qmd`. It takes under a minute.
+You need R with the `tidyverse`, `janitor`, `lubridate` and `arrow` packages. Download the four parquet files listed in `data/raw/README.txt` into `data/raw/`, set the project folder as the working directory, and render the notebook in RStudio or with `quarto render maryland_ice_notebook.qmd`. It takes about a minute. Running it on the Aug. 24, 2026, release reproduces every table in `csv/` exactly. The Deportation Data Project replaces its files when it publishes new data, so a later download may give slightly different numbers.
 
 ## What's in the notebook
 
-| Part | File | Sections |
+| Part | Records | Sections |
 |---|---|---|
-| 1 | Arrests | 1.5 growth by criminal history, Jan.–July 2025 vs. 2026 · 1.6 since Jan. 20, 2025 · 1.7 no-record share over time · 1.8 custodial vs. non-custodial · 1.9 before and after the 287(g) ban · 1.10–1.12 counties, Eastern Shore, ICE offices · 1.13 citizenship · 1.14 national comparison |
+| 1 | Arrests | 1.1–1.4 which rows are Maryland, duplicates, main fields · 1.5 growth by criminal history, Jan.–July 2025 vs. 2026 · 1.6 since Jan. 20, 2025 · 1.7 no-record share over time · 1.8 custodial vs. non-custodial · 1.9 before and after the 287(g) ban · 1.10–1.12 counties, Eastern Shore, ICE's Baltimore offices · 1.13 citizenship · 1.14 national comparison |
 | 2 | Detainers | 2.1 facility types · 2.2 per month around the ban · 2.3 outcomes · 2.4 outcomes by jail |
-| 3 | Arrests joined to detention | 3.1 Baltimore hold room · 3.2 who was detained · 3.3 outcomes of 2025 arrests (no record, and everyone) · 3.3b by country · 3.4 where people were sent |
-| 4 | Detention stints | 4.1 facilities per person · 4.1b held in Louisiana, Texas and Mississippi · 4.2 paths through detention |
+| 3 | Arrests linked to detention | 3.1 Baltimore hold room · 3.2 who was detained · 3.3 how 2025 arrests ended (no record, and everyone) · 3.3b by country · 3.4 where people were sent |
+| 4 | Detention stints | 4.1 facilities per person · 4.1b held in Louisiana, Texas and Mississippi · 4.2 paths through detention and first stops |
 | 5 | | writes the tables in `csv/` |
 
 ## Tables for the graphics (`csv/`)
 
-| File | Graphic | Story |
-|---|---|---|
-| growth.csv | Arrests by criminal history, Jan.–July | 1 |
-| cities.csv, counties.csv | Arrest map (scroll) | 1 |
-| states.csv | No-record share by state | 1 |
-| share_monthly.csv | No-record share by month, Maryland vs. U.S. | 1 |
-| holdroom.csv | Baltimore hold room stays | 2 |
-| facility_counts.csv | Facilities per person | 2 |
-| facilities.csv, route.csv | Detention map and route (scroll) | 2 |
-| citizenship_arrests.csv | Arrests by citizenship | 2 |
-| destinations.csv, routes.csv, countries.csv | Where people were sent (globe, scroll) | 2 |
-| citizenship.csv | Citizenship with departures (not currently used in a story) | — |
-| g287.csv, detainers.csv | 287(g) arrests and detainers by month | 3 |
-| detainer_outcomes.csv | Detainer outcomes by jail | 3 |
-| custody.csv | Custodial vs. non-custodial arrests by month | 3 |
+| File | Graphic |
+|---|---|
+| growth.csv | Arrests by criminal history, Jan.–July 2025 vs. 2026 |
+| cities.csv, counties.csv | Map of arrests by city and county |
+| states.csv | No-record share by state |
+| share_monthly.csv | No-record share by month, Maryland vs. U.S. |
+| custody.csv | Custodial vs. non-custodial arrests by month |
+| citizenship_arrests.csv | Arrests by citizenship |
+| citizenship.csv | Arrests by citizenship, with departures |
+| holdroom.csv | Median stay in the Baltimore hold room by month |
+| facility_counts.csv | Number of facilities per person |
+| facilities.csv, route.csv | Map of detention facilities and the five-stop route |
+| destinations.csv, routes.csv, countries.csv | Where people were sent |
+| g287.csv, detainers.csv | 287(g) arrests and detainers by month |
+| detainer_outcomes.csv | Detainer outcomes by jail |
 
 ## How we did this analysis
 
@@ -74,7 +79,7 @@ Maryland banned 287(g) agreements on Feb. 17, 2026. To compare before and after 
 
 **Which arrests are in Maryland.** ICE records the state of each arrest, but sometimes leaves it blank. The Deportation Data Project fills in those blanks from the arrest location, in a column called `apprehension_state_filled_in`. Using that column finds 12,859 Maryland arrests, 214 more than ICE's own state field. After removing 218 likely duplicates, 12,641 remained.
 
-**Arrests, not people.** Some people were arrested more than once, and 28 arrests have no person ID. So the stories count arrests, not people, unless they say otherwise.
+**Arrests and people.** Some people were arrested more than once, and 28 arrests have no person ID. So figures about arrests, and about how arrests ended, count arrests. Figures about detention (how many people were detained, where they were held and how many facilities they passed through) count people, with each person counted once.
 
 **Criminal history.** ICE puts each person it arrests into one of three groups, based on what its systems showed at the time of the arrest (`apprehension_criminality`):
 
@@ -113,7 +118,9 @@ This file links each arrest to the person's time in ICE detention. Because each 
 
 **The Baltimore hold room.** For people whose first stop was the hold room at ICE's Baltimore office, we measured the hours between when they were booked in and booked out. For each month, we report the median, the middle value: half the people stayed longer and half stayed shorter. The median is less affected by a few unusually long stays than an average would be. People still in the room when the records end have no book-out time and are not counted, so the most recent month may understate stays.
 
-**How cases ended.** A departure means the records show a date the person left the U.S., either deported or by voluntary departure. The records also show whether someone was released or is still detained. Cases can take months to resolve, and the records end in early August 2026, so to describe how cases ended we used arrests made from Jan. 20 through Dec. 31, 2025, which have had at least seven months to play out.
+**How cases ended.** A departure means the records show a date the person left the U.S. The records also show whether someone was released or is still detained. Cases can take months to resolve, and the records end in early August 2026, so to describe how cases ended we used all 4,754 arrests made from Jan. 20 through Dec. 31, 2025, including those of people ICE never detained. Those cases have had at least seven months to play out. About 5% of them, 249, have no clear outcome in the records: 166 have no detention stay recorded, 60 are listed as deported but have no departure date, 22 were transferred to another agency's custody and one has another outcome.
+
+**Outside Maryland.** For each detention, the records name the facility where the person spent the longest time. We counted a person as held mostly outside Maryland if that facility was in another state for any of their detentions.
 
 **Sent to another country.** We counted a person as sent to a country other than their own when the country they were sent to differs from their citizenship in ICE's records. One record listing "KOREA" and "SOUTH KOREA" was treated as the same country. These counts cover people arrested since Jan. 20, 2025. The arrests file records slightly fewer departures than the detention file (7,536 compared with 7,611), so totals can differ slightly depending on which file is used. On the globe, each circle sits at the center of a country, not at the place the person arrived.
 
@@ -121,7 +128,9 @@ This file links each arrest to the person's time in ICE detention. Because each 
 
 This file has one row for every stop a person made at a detention facility. We kept the stops for the people above.
 
-**How many facilities.** We counted the number of different facilities each person passed through, using ICE's code for each facility.
+**How many facilities.** We counted the number of different facilities each person passed through, using ICE's code for each facility. The Baltimore and Salisbury hold rooms count as facilities.
+
+**First stops.** Where people were booked first counts each person once, using their first detention.
 
 **Where people were held.** Time held in Louisiana, Texas, Mississippi and at Guantánamo Bay comes from the state ICE recorded for each facility, where Guantánamo is coded "CU."
 
@@ -134,10 +143,10 @@ This file has one row for every stop a person made at a detention facility. We k
 - ICE often records a general area rather than an address, so arrests were placed by the city or county ICE listed. The records don't show where the people arrested lived.
 - About half of the detainers have no recorded outcome yet, so outcome shares could change. The records cannot show informal contacts between local officers and ICE.
 - The records show where and when someone was held, not why ICE moved them. Hold room times show how long people stayed, not how crowded the rooms were. Where someone was held does not show where their case was heard.
-- A departure is recorded as a removal or a voluntary departure; the records don't show how that decision was made. Destinations are as ICE recorded them.
+- The records show that a person left the country, not how that decision was made. Destinations are as ICE recorded them.
 - Facility types were sorted by CNS from ICE's facility names and may not be exact.
 - ICE keeps updating its records, so counts for the most recent months may grow, and paths for people still detained may be incomplete.
 
 ## Credit
 
-Analysis: Mehedi Marof, Capital News Service, Philip Merrill College of Journalism, University of Maryland. Data: Deportation Data Project.
+Analysis: Mehedi Marof, Capital News Service, Philip Merrill College of Journalism, University of Maryland. Data: Deportation Data Project. Questions or corrections: open an issue on this repository.
